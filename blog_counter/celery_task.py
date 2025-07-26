@@ -9,10 +9,10 @@ def async_update_article(article_id, user_id):
     # 异步更新数据库(通过celery)
     try:
         article = Article.objects.get(id=article_id)
-        view_count = redis_conn.get(f"article_{article_id}_totals") 
+        view_count = redis_conn.hget(f"article:{article_id}:stats", b'view_count') 
         if view_count:
             article.view_count = int(view_count)
-        user_count = redis_conn.hlen(f"article_{article_id}_users")
+        user_count = redis_conn.hget(f"article:{article_id}:stats", b'user_count')
         if user_count:
             article.user_count = int(user_count)
         article.save()
