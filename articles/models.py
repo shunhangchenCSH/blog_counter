@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import localtime
 
 # Create your models here.
 class Article(models.Model):
@@ -24,7 +25,8 @@ class ArticleViews(models.Model):
     update_time = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username} read {self.article.title}"
+        localtime_create = localtime(self.create_time)
+        return f"{self.user.username} read {self.article.title}, readtime: {localtime_create}"
 
 
 

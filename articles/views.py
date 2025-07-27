@@ -33,42 +33,39 @@ class ArticleDetailView(View):
                 response_data = {}
 
                 hit_flag = True
-                # 获取缓存
-                cached_data = ArticleDataService.get_article_views_data(article_id, request.user.id)
-                if not cached_data or cached_data['view_count'] == 0:
+                # 获取数据，是不是取决于'is_cache'
+                views_data = ArticleDataService.get_article_views_data(article_id, user_id)
+                if not views_data['is_cache']:
                     # 代表没命中
                     hit_flag = False
-                    # 从数据库查询
                     article = get_object_or_404(Article, id=article_id)
                     user_view_count = ArticleViews.objects.filter(article_id=article_id, user_id=user_id).count()
-                    # 写入缓存
-                    cached_data = {
+                    views_data = {
                         'title': article.title,
                         'content': article.content,
-                        'view_count': article.view_count ,
+                        'view_count': article.view_count,
                         'user_count': article.user_count,
                         'user_view_count': user_view_count,
                     }
-                    ArticleDataService.set_article_views_data(article_id, user_id, db_data=cached_data)
+
+                # 同步缓存
+                ArticleDataService.set_article_views_data(article_id, user_id, db_data=views_data)
 
                 response_data.update({
-                    'title': cached_data['title'],
-                    'content': cached_data['content'],
-                    'view_count': cached_data['view_count'],
-                    'user_count': cached_data['user_count'],
-                    'user_view_count': cached_data['user_view_count'],
+                    'title': views_data['title'],
+                    'content': views_data['content'],
+                    'view_count': views_data['view_count'],
+                    'user_count': views_data['user_count'],
+                    'user_view_count': views_data['user_view_count'],
                 })
 
                 # redis新增文章访问
-                cached_data = ArticleDataService.incr_article_views_data(article_id, user_id)
+                views_data = ArticleDataService.incr_article_views_data(article_id, user_id)
                 response_data.update({
-                    'view_count': cached_data['view_count'],
-                    'user_count': cached_data['user_count'],
-                    'user_view_count': cached_data['user_view_count'],
+                    'view_count': views_data['view_count'],
+                    'user_count': views_data['user_count'],
+                    'user_view_count': views_data['user_view_count'],
                 })
-                
-                # 异步更新数据库
-                async_update_article.delay(article_id, user_id)
 
                 # 增加api调用次数
                 StatsDataService.incr_api_call_data(hit_flag)
