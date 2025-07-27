@@ -150,8 +150,8 @@ class StatsDataService:
         try:
             redis_conn = get_redis_connection("default")
 
-            total_call = redis_conn.get("article_detail_api_total_call")
-            real_call = redis_conn.get("article_list_api_real_call")
+            total_call = redis_conn.get("article_detail_api_total_call") or 0
+            real_call = redis_conn.get("article_list_api_real_call") or 0
             hit_rate = 0
             if total_call and real_call:
                 hit_rate = int(real_call) / int(total_call)

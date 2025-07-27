@@ -84,16 +84,6 @@ class ArticleDetailView(View):
             raise e
 
 
-class ArticleDataView(View):
-    def get(self, request, article_id):
-        data = ArticleDataService.get_article_views_data(article_id, request.user.id)
-        return JsonResponse({
-                'user_count': data['user_count'],
-                'view_count': data['view_count'],
-                'user_view_count': data['user_view_count'],
-            })
-
-
 class CacheStatsView(View):
     def get(self, request):
         stats = StatsDataService.get_cache_stats()

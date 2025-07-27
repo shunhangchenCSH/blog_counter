@@ -2,4 +2,3 @@ django
 django-redis
 redis
 celery
-json
